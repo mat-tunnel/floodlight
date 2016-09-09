@@ -8,7 +8,7 @@ Build Status:
 
 What is our work based on Floodlight?
 ---------------
-Add support of two tunnel actions: push_sdn_tunnel and pop_sdn_tunnel.
+Add support of two tunnel actions: push_sdn_tunnel and pop_sdn_tunnel. The floodlight is forked from master branches.
 
 Floodlight Wiki
 ---------------
