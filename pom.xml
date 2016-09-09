@@ -256,6 +256,29 @@
 			<groupId>org.projectfloodlight</groupId>
 			<artifactId>openflowj</artifactId>
 			<version>3.0.0-SNAPSHOT</version>
+			<scope>system</scope>  
+    		<systemPath>${project.basedir}/lib/openflowj-3.0.0-SNAPSHOT.jar</systemPath>
+		</dependency>
+		<dependency>
+			<groupId>org.projectfloodlight</groupId>
+			<artifactId>openflowj-javadoc</artifactId>
+			<version>3.0.0-SNAPSHOT</version>
+			<scope>system</scope>  
+    		<systemPath>${project.basedir}/lib/openflowj-3.0.0-SNAPSHOT-javadoc.jar</systemPath>
+		</dependency>
+		<dependency>
+			<groupId>org.projectfloodlight</groupId>
+			<artifactId>openflowj-sources</artifactId>
+			<version>3.0.0-SNAPSHOT</version>
+			<scope>system</scope>  
+    		<systemPath>${project.basedir}/lib/openflowj-3.0.0-SNAPSHOT-sources.jar</systemPath>
+		</dependency>
+		<dependency>
+			<groupId>org.projectfloodlight</groupId>
+			<artifactId>openflowj-tests</artifactId>
+			<version>3.0.0-SNAPSHOT</version>
+			<scope>system</scope>  
+    		<systemPath>${project.basedir}/lib/openflowj-3.0.0-SNAPSHOT-tests.jar</systemPath>
 		</dependency>
 		<dependency>
 			<groupId>io.netty</groupId>
