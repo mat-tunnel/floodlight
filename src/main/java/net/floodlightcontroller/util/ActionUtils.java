@@ -889,12 +889,14 @@ public class ActionUtils {
                     case STR_FIELD_COPY:
                         a = (OFAction) copyFieldFromJson(pair, f.getVersion());
                         break;
+                    /*********************edited by keyaozhang**************************/
                     case STR_PUSH_SDN_TUNNEL:
 						a = decode_push_sdn_tunnel(pair, v);
 						break;
 					case STR_POP_SDN_TUNNEL:
 						a = f.actions().popSdnTunnel();
 						break;
+					/*********************edited by keyaozhang**************************/
                     default:
                         log.error("Unexpected action key '{}'", keyPair);
                         break;
