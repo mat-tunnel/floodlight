@@ -4,7 +4,7 @@ Floodlight OpenFlow Controller (OSS)
 Build Status:
 -------------
 
-[![Build Status](https://travis-ci.org/zhangkeyao/floodlight.svg?branch=master)](https://travis-ci.org/zhangkeyao/floodlight)
+[![Build Status](https://travis-ci.org/zhangkeyao/floodlight.svg?branch=tunnel)](https://travis-ci.org/zhangkeyao/floodlight)
 
 What is our work based on Floodlight?
 ---------------
