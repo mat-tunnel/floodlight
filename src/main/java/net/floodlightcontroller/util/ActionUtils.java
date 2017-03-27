@@ -114,12 +114,8 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.JsonGenerator.Feature;
 import com.fasterxml.jackson.core.JsonParser;
 
-import org.projectfloodlight.openflow.protocol.action.OFActionPushSdnTunnel;
-import org.projectfloodlight.openflow.protocol.action.OFActionPopSdnTunnel;
-import org.projectfloodlight.openflow.protocol.action.OFActionPushGreTunnel;
-import org.projectfloodlight.openflow.protocol.action.OFActionPopGreTunnel;
-import org.projectfloodlight.openflow.protocol.action.OFActionPushVxlanTunnel;
-import org.projectfloodlight.openflow.protocol.action.OFActionPopVxlanTunnel;
+import org.projectfloodlight.openflow.protocol.action.OFActionSdnEncrypt;
+import org.projectfloodlight.openflow.protocol.action.OFActionSdnDecrypt;
 
 /**
  * OFAction helper functions. Use with any OpenFlowJ-Loxi Action.
@@ -168,12 +164,8 @@ public class ActionUtils {
     public static final String STR_FIELD_COPY = "copy_field";
     public static final String STR_METER = "meter";
     public static final String STR_EXPERIMENTER = "experimenter";
-    public static final String STR_PUSH_SDN_TUNNEL = "push_sdn_tunnel";
-    public static final String STR_POP_SDN_TUNNEL = "pop_sdn_tunnel";
-    public static final String STR_PUSH_GRE_TUNNEL = "push_gre_tunnel";
-    public static final String STR_POP_GRE_TUNNEL = "pop_gre_tunnel";
-    public static final String STR_PUSH_VXLAN_TUNNEL = "push_vxlan_tunnel";
-    public static final String STR_POP_VXLAN_TUNNEL = "pop_vxlan_tunnel";
+    public static final String STR_SDN_ENCRYPT = "sdn_encrypt";
+    public static final String STR_SDN_DECRYPT = "sdn_decrypt";
     public static final String STR_NOT_APPLICABLE = "n/a";
 
     /* OF1.3 set-field operations are defined as any OF1.3 match.
@@ -282,32 +274,12 @@ public class ActionUtils {
                 sb.append(STR_PBB_POP);
                 break;
             /*********************edited by keyaozhang**************************/
-            case PUSH_SDN_TUNNEL:
-                sb.append(STR_PUSH_SDN_TUNNEL + "=src_ip:" + ((OFActionPushSdnTunnel)a).getSrcIp().toString()
-                                              + "; dst_ip:" + ((OFActionPushSdnTunnel)a).getDstIp().toString()
-                                              + "; id_length:" + Short.toString(((OFActionPushSdnTunnel)a).getIdLength())
-                                              + "; tun_id1:" + Integer.toString(((OFActionPushSdnTunnel)a).getTunId1())
-                                              + "; tun_id2:" + Integer.toString(((OFActionPushSdnTunnel)a).getTunId2())
-                                              + "; tun_id3:" + Integer.toString(((OFActionPushSdnTunnel)a).getTunId3()) );
+            case SDN_ENCRYPT:
+                sb.append(STR_SDN_ENCRYPT);
                 break;
-            case POP_SDN_TUNNEL:
-                sb.append(STR_POP_SDN_TUNNEL);
-                break;
-            case PUSH_GRE_TUNNEL:
-                sb.append(STR_PUSH_GRE_TUNNEL + "=src_ip:" + ((OFActionPushGreTunnel)a).getSrcIp().toString()
-                                              + "; dst_ip:" + ((OFActionPushGreTunnel)a).getDstIp().toString() );
-                break;
-            case POP_GRE_TUNNEL:
-                sb.append(STR_POP_GRE_TUNNEL);
-                break;
-            case PUSH_VXLAN_TUNNEL:
-                sb.append(STR_PUSH_VXLAN_TUNNEL + "=src_ip:" + ((OFActionPushVxlanTunnel)a).getSrcIp().toString()
-                                                + "; dst_ip:" + ((OFActionPushVxlanTunnel)a).getDstIp().toString()
-                                                + "; vx_vni:" + Long.toString(((OFActionPushVxlanTunnel)a).getVxVni()) );
-                break;
-            case POP_VXLAN_TUNNEL:
-                sb.append(STR_POP_VXLAN_TUNNEL);
-                break;            
+            case SDN_DECRYPT:
+                sb.append(STR_SDN_ENCRYPT);
+                break;          
 			/*********************edited by keyaozhang**************************/
             case EXPERIMENTER:
                 sb.append(STR_EXPERIMENTER).append("=").append(Long.toString(((OFActionExperimenter)a).getExperimenter()));
@@ -913,24 +885,12 @@ public class ActionUtils {
                         a = (OFAction) copyFieldFromJson(pair, f.getVersion());
                         break;
                     /*********************edited by keyaozhang**************************/
-                    case STR_PUSH_SDN_TUNNEL:
-                        a = decode_push_sdn_tunnel(pair, v);
+                    case STR_SDN_ENCRYPT:
+                        a = f.actions().sdnEncrypt();
                         break;
-                    case STR_POP_SDN_TUNNEL:
-                        a = f.actions().popSdnTunnel();
-                        break;
-                    case STR_PUSH_GRE_TUNNEL:
-                        a = decode_push_gre_tunnel(pair, v);
-                        break;
-                    case STR_POP_GRE_TUNNEL:
-                        a = f.actions().popGreTunnel();
-                        break;
-                    case STR_PUSH_VXLAN_TUNNEL:
-                        a = decode_push_vxlan_tunnel(pair, v);
-                        break;
-                    case STR_POP_VXLAN_TUNNEL:
-                        a = f.actions().popVxlanTunnel();
-                        break;                    
+                    case STR_SDN_DECRYPT:
+                        a = f.actions().sdnDecrypt();
+                        break;                   
                     /*********************edited by keyaozhang**************************/
                     default:
                         log.error("Unexpected action key '{}'", keyPair);
@@ -1430,301 +1390,5 @@ public class ActionUtils {
             return null;
         }
     }
-    
-    /**
-	 * Parse push_sdn_tunnel actions.The key and delimiter for the action should be omitted, and only the
-	 * data should be presented to this decoder. A leading 0x is permitted.
-	 *  
-	 * @programmer added by keyaozhang
-	 * 
-	 * @param actionToDecode; The action as a string to decode
-	 * @param version; The OF version to create the action for
-	 * @param log
-	 * @return
-	 */
-	private static OFActionPushSdnTunnel decode_push_sdn_tunnel(String actionToDecode, OFVersion version){
-		String[] tunnelStringSplit = actionToDecode.split("; ");
-		if (tunnelStringSplit.length != 6) {
-			log.debug("[Push Sdn Tunnel Value] {} does not have correct form.", tunnelStringSplit);
-			return null;
-		}else{
-			String[] tmp;
-			ArrayDeque<String[]> tunnelStringToDecode = new ArrayDeque<String[]>();
-			for (int i = 0; i < tunnelStringSplit.length; i++) {
-				tmp = tunnelStringSplit[i].split(":"); // split into separate [action, value] or [action, key@value] singles
-				if (tmp.length != 2) {
-					log.debug("Token " + tunnelStringSplit[i] + " does not have form 'key:value' parsing ");
-					return null;
-				}
-				tunnelStringToDecode.add(tmp);  
-			}
-			OFActionPushSdnTunnel.Builder ab = OFFactories.getFactory(version).actions().buildPushSdnTunnel();
-			while (!tunnelStringToDecode.isEmpty()) {
-				String[] keyPair = tunnelStringToDecode.pollFirst();
-				String key;
-				String pair;
-				key = keyPair[0];
-				pair = keyPair[1];
-				try{
-					switch (key) {
-					case "src_ip" :
-						try {
-							IPv4Address srcIp = IPv4Address.of(pair);
-							ab.setSrcIp(srcIp);
-						} catch (Exception e) {
-							log.debug("Invalid src-ip in: '{}'", pair);
-							return null;
-						}
-						break;
-					case "dst_ip" :
-						try {
-							IPv4Address dstIp = IPv4Address.of(pair);
-							ab.setDstIp(dstIp);
-						} catch (Exception e) {
-							log.debug("Invalid dst-ip in: '{}'", pair);
-							return null;
-						}
-						break;
-					case "id_length" :
-						Matcher n3 = Pattern.compile("((?:0x)?\\d+)").matcher(pair); 
-						if (n3.matches()) {
-							if (n3.group(1) != null) {
-								try {
-									short idLength = ParseUtils.parseHexOrDecShort(n3.group(1));
-									ab.setIdLength(idLength);
-								} 
-								catch (NumberFormatException e) {
-									log.debug("Invalid id-length in: '{}'", pair);
-									return null;
-								}
-							}
-						}
-						else {
-							log.debug("Invalid id-length in: '{}'", pair);
-							return null;
-						}
-						break;
-					case "tun_id1" :
-						Matcher n4 = Pattern.compile("((?:0x)?\\d+)").matcher(pair); 
-						if (n4.matches()) {
-							if (n4.group(1) != null) {
-								try {
-									int tunId1 = ParseUtils.parseHexOrDecInt(n4.group(1));
-									ab.setTunId1(tunId1);
-								} 
-								catch (NumberFormatException e) {
-									log.debug("Invalid tun-id1 in: '{}'", pair);
-									return null;
-								}
-							}
-						}
-						else {
-							log.debug("Invalid tun-id1 in: '{}'", pair);
-							return null;
-						}
-						break;
-					case "tun_id2" :
-						Matcher n5 = Pattern.compile("((?:0x)?\\d+)").matcher(pair); 
-						if (n5.matches()) {
-							if (n5.group(1) != null) {
-								try {
-									int tunId2 = ParseUtils.parseHexOrDecInt(n5.group(1));
-									ab.setTunId2(tunId2);
-								} 
-								catch (NumberFormatException e) {
-									log.debug("Invalid tun-id2 in: '{}'", pair);
-									return null;
-								}
-							}
-						}
-						else {
-							log.debug("Invalid tun-id2 in: '{}'", pair);
-							return null;
-						}
-						break;
-					case "tun_id3" :
-						Matcher n6 = Pattern.compile("((?:0x)?\\d+)").matcher(pair); 
-						if (n6.matches()) {
-							if (n6.group(1) != null) {
-								try {
-									int tunId3 = ParseUtils.parseHexOrDecInt(n6.group(1));
-									ab.setTunId3(tunId3);
-								} 
-								catch (NumberFormatException e) {
-									log.debug("Invalid tun-id3 in: '{}'", pair);
-									return null;
-								}
-							}
-						}
-						else {
-							log.debug("Invalid tun-id3 in: '{}'", pair);
-							return null;
-						}
-						break;
-					default:
-						log.error("UNEXPECTED ACTION KEY '{}'", keyPair);
-						return null;
-					}
-				}catch (Exception e) {
-					log.error("Illegal Push SDN Tunnel Action: " + e.getMessage());
-				}
-			}
-			log.debug("action {}", ab.build());
-			return ab.build();
-		}
-	}
-	
-	/**
-	 * Parse push_gre_tunnel actions.The key and delimiter for the action should be omitted, and only the
-	 * data should be presented to this decoder. A leading 0x is permitted.
-	 *  
-	 * @programmer added by keyaozhang
-	 * 
-	 * @param actionToDecode; The action as a string to decode
-	 * @param version; The OF version to create the action for
-	 * @param log
-	 * @return
-	 */
-	private static OFActionPushGreTunnel decode_push_gre_tunnel(String actionToDecode, OFVersion version){
-		String[] tunnelStringSplit = actionToDecode.split("; ");
-		if (tunnelStringSplit.length != 2) {
-			log.debug("[Push Gre Tunnel Value] {} does not have correct form.", tunnelStringSplit);
-			return null;
-		}else{
-			String[] tmp;
-			ArrayDeque<String[]> tunnelStringToDecode = new ArrayDeque<String[]>();
-			for (int i = 0; i < tunnelStringSplit.length; i++) {
-				tmp = tunnelStringSplit[i].split(":"); // split into separate [action, value] or [action, key@value] singles
-				if (tmp.length != 2) {
-					log.debug("Token " + tunnelStringSplit[i] + " does not have form 'key:value' parsing ");
-					return null;
-				}
-				tunnelStringToDecode.add(tmp);  
-			}
-			OFActionPushGreTunnel.Builder ab = OFFactories.getFactory(version).actions().buildPushGreTunnel();
-			while (!tunnelStringToDecode.isEmpty()) {
-				String[] keyPair = tunnelStringToDecode.pollFirst();
-				String key;
-				String pair;
-				key = keyPair[0];
-				pair = keyPair[1];
-				try{
-					switch (key) {
-					case "src_ip" :
-						try {
-							IPv4Address srcIp = IPv4Address.of(pair);
-							ab.setSrcIp(srcIp);
-						} catch (Exception e) {
-							log.debug("Invalid src-ip in: '{}'", pair);
-							return null;
-						}
-						break;
-					case "dst_ip" :
-						try {
-							IPv4Address dstIp = IPv4Address.of(pair);
-							ab.setDstIp(dstIp);
-						} catch (Exception e) {
-							log.debug("Invalid dst-ip in: '{}'", pair);
-							return null;
-						}
-						break;
-					default:
-						log.error("UNEXPECTED ACTION KEY '{}'", keyPair);
-						return null;
-					}
-				}catch (Exception e) {
-					log.error("Illegal Push Gre Tunnel Action: " + e.getMessage());
-				}
-			}
-			log.debug("action {}", ab.build());
-			return ab.build();
-		}
-	}
-	
-	 /**
-		 * Parse push_vxlan_tunnel actions.The key and delimiter for the action should be omitted, and only the
-		 * data should be presented to this decoder. A leading 0x is permitted.
-		 *  
-		 * @programmer added by keyaozhang
-		 * 
-		 * @param actionToDecode; The action as a string to decode
-		 * @param version; The OF version to create the action for
-		 * @param log
-		 * @return
-		 */
-		private static OFActionPushVxlanTunnel decode_push_vxlan_tunnel(String actionToDecode, OFVersion version){
-			String[] tunnelStringSplit = actionToDecode.split("; ");
-			if (tunnelStringSplit.length != 3) {
-				log.debug("[Push Vxlan Tunnel Value] {} does not have correct form.", tunnelStringSplit);
-				return null;
-			}else{
-				String[] tmp;
-				ArrayDeque<String[]> tunnelStringToDecode = new ArrayDeque<String[]>();
-				for (int i = 0; i < tunnelStringSplit.length; i++) {
-					tmp = tunnelStringSplit[i].split(":"); // split into separate [action, value] or [action, key@value] singles
-					if (tmp.length != 2) {
-						log.debug("Token " + tunnelStringSplit[i] + " does not have form 'key:value' parsing ");
-						return null;
-					}
-					tunnelStringToDecode.add(tmp);  
-				}
-				OFActionPushVxlanTunnel.Builder ab = OFFactories.getFactory(version).actions().buildPushVxlanTunnel();
-				while (!tunnelStringToDecode.isEmpty()) {
-					String[] keyPair = tunnelStringToDecode.pollFirst();
-					String key;
-					String pair;
-					key = keyPair[0];
-					pair = keyPair[1];
-					try{
-						switch (key) {
-						case "src_ip" :
-							try {
-								IPv4Address srcIp = IPv4Address.of(pair);
-								ab.setSrcIp(srcIp);
-							} catch (Exception e) {
-								log.debug("Invalid src-ip in: '{}'", pair);
-								return null;
-							}
-							break;
-						case "dst_ip" :
-							try {
-								IPv4Address dstIp = IPv4Address.of(pair);
-								ab.setDstIp(dstIp);
-							} catch (Exception e) {
-								log.debug("Invalid dst-ip in: '{}'", pair);
-								return null;
-							}
-							break;
-						case "vx_vni" :
-							Matcher n3 = Pattern.compile("((?:0x)?\\d+)").matcher(pair); 
-							if (n3.matches()) {
-								if (n3.group(1) != null) {
-									try {
-										long vxVni = ParseUtils.parseHexOrDecLong(n3.group(1));
-										ab.setVxVni(vxVni);
-									} 
-									catch (NumberFormatException e) {
-										log.debug("Invalid vx-vni in: '{}'", pair);
-										return null;
-									}
-								}
-							}
-							else {
-								log.debug("Invalid vx-vni in: '{}'", pair);
-								return null;
-							}
-							break;
-						default:
-							log.error("UNEXPECTED ACTION KEY '{}'", keyPair);
-							return null;
-						}
-					}catch (Exception e) {
-						log.error("Illegal Push Vxlan Tunnel Action: " + e.getMessage());
-					}
-				}
-				log.debug("action {}", ab.build());
-				return ab.build();
-			}
-		}
 	
 }
