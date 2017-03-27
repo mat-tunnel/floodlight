@@ -4,11 +4,11 @@ Floodlight OpenFlow Controller (OSS)
 Build Status:
 -------------
 
-[![Build Status](https://travis-ci.org/zhangkeyao/floodlight.svg?branch=master)](https://travis-ci.org/zhangkeyao/floodlight)
+[![Build Status](https://travis-ci.org/zhangkeyao/floodlight.svg?branch=security)](https://travis-ci.org/zhangkeyao/floodlight)
 
 What is our work based on Floodlight?
 ---------------
-Add support of two tunnel actions: push_sdn_tunnel and pop_sdn_tunnel. The floodlight is forked from master branches.
+Add support of two tunnel actions: sdn_encrypt and sdn_decrypt. The floodlight is forked from master branches.
 
 Floodlight Wiki
 ---------------
